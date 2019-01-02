@@ -1,0 +1,31 @@
+apiVersion: skaffold/v1alpha2
+kind: Config
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.DOCKER_REGISTRY}}/vketest/aspnet-app-dgejj:{{.VERSION}}"
+  artifacts:
+  - imageName: changeme
+    workspace: .
+    docker: {}
+  local: {}
+deploy:
+  kubectl:
+    manifests:
+profiles:
+- name: dev
+  build:
+    tagPolicy:
+      envTemplate:
+        template: "{{.DOCKER_REGISTRY}}/vketest/aspnet-app-dgejj:{{.DIGEST_HEX}}"
+    artifacts:
+    - docker: {}
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: aspnet-app-dgejj
+        chartPath: charts/aspnet-app-dgejj
+        setValueTemplates:
+          image.repository: "{{.DOCKER_REGISTRY}}/vketest/aspnet-app-dgejj"
+          image.tag: "{{.DIGEST_HEX}}"
